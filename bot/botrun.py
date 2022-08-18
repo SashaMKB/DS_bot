@@ -20,4 +20,14 @@ async def on_ready():
         print("DataBase connected...Ok")
 
 
+@bot.command()
+async def test(ctx):
+    await ctx.send("On place")
+
+
+@bot.command()
+async def info(ctx, *, arg):
+    await ctx.send(arg)
+
+
 bot.run(line)
