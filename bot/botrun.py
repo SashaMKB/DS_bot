@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import os, sqlite3
+import string
+import json
 
 file = open("TOKEN.txt", "r")
 line = file.readline()
@@ -35,9 +37,19 @@ async def info(ctx, arg=None):
     elif arg == 'commands':
         await ctx.send(f'{author.mention}\n|test - is bot online?')
     elif arg == 'rules':
-        await ctx.send(f'{author.mention}\nкороче, читы - бан, кемперство - бан, оскорбление - бан, оскорбление администрации - расстрел, потом бан')
+        await ctx.send(
+            f'{author.mention}\nкороче, читы - бан, кемперство - бан, оскорбление - бан, оскорбление администрации - расстрел, потом бан')
     else:
         await ctx.send(f'{author.mention}\nNo such command')
 
+
+@bot.event
+async def on_message(message):
+    if {i.lower().translate(str.maketrans('', '', string.punctuation)) \
+    for i in message.content.split(' ')}.intersection(set(json.load(open('cenz.json')))) != set():  # "whats up" in message.content.lower():
+        await message.channel.send(f'{message.author.mention},you say banned word')
+        await message.delete()
+
+    await bot.process_commands(message)
 
 bot.run(line)
