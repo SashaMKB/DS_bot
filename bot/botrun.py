@@ -57,7 +57,7 @@ async def send(ctx):
     await ctx.author.send('Hello World')
 
 @bot.command()
-async def send_member(ctx, member:discord.Member):
+async def send_member(ctx, member: discord.Member):
     await member.send(f'{member.name}, hi from {ctx.author.name}')
 
 @bot.command()
@@ -65,7 +65,15 @@ async def clear(ctx, amount=100):
     if ctx.message.author.guild_permissions.administrator:
         await ctx.channel.purge(limit=amount)
 
+@bot.event
+async def on_member_join(member):
+    await member.send('Welcome home, good hunter')
+    for ch in bot.get_guild(member.guild.id).text_channels:
+        await bot.get_channel(ch.id).send(f'{member.name}, what is it your desire?')
 
-
-
+@bot.event
+async def on_member_remove
+    for ch in bot.get_guild(member.guild.id).channels:
+        if ch.name == 'основной':
+            await bot.get_channel(ch.id).send(f'{member}, I will wait for you')
 bot.run(line)
