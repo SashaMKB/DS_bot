@@ -52,4 +52,20 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+@bot.command()
+async def send(ctx):
+    await ctx.author.send('Hello World')
+
+@bot.command()
+async def send_member(ctx, member:discord.Member):
+    await member.send(f'{member.name}, hi from {ctx.author.name}')
+
+@bot.command()
+async def clear(ctx, amount=100):
+    if ctx.message.author.guild_permissions.administrator:
+        await ctx.channel.purge(limit=amount)
+
+
+
+
 bot.run(line)
