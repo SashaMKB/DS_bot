@@ -50,8 +50,38 @@ async def on_message(message):
         await message.channel.send(f'{message.author.mention},you say banned word')
         await message.delete()
 
+        name = message.guild.name
+        base.execute('CREATE TABLE IF NOT EXISTS warning(userid INT, count INT)')
+        base.commit()
+
+        warnings = cur.execute('SELECT * FROM warning WHERE userid == ?', (message.author.id,)).fetchone()
+
+        if warnings is None:
+            cur.execute('INSERT INTO warning VALUES(?, ?)',(message.author.id, 1))
+            base.commit()
+            await message.channel.send(f'{message.author.mention}, First warning, maximum amount - 3.')
+        elif warnings[1] == 1:
+            cur.execute('UPDATE warning SET count == ? WHERE userid == ?', (2, message.author.id))
+            base.commit()
+            await message.channel.send(f'{message.author.mention}, Second  warning, maximum amount - 3.')
+        elif warnings[1] == 2:
+            await message.channel.send(f'{message.author.mention}, Wasted...')
+            cur.execute('UPDATE warning SET count == ? WHERE userid == ?', (3,message.author.id))
+            base.commit()
+            await message.channel.send(f'{message.author.mention}, banned for no reason')
+            await message.author.ban(reason='This server for cool guys')
+
     await bot.process_commands(message)
 
+@bot.command()
+async def status(ctx, member: discord.Member):
+    base.execute('CREATE TABLE IF NOT EXISTS warning(userid INT, count INT)')
+    base.commit()
+    warnings = cur.execute('SELECT * FROM warning WHERE userid == ?', (member.id,)).fetchone()
+    if warnings == None:
+        await ctx.send(f'{ctx.message.author.mention}, clear yet')
+    else:
+        await ctx.send(f'{ctx.message.author.mention}, Gotcha, you have  {warnings[1]} warnings')
 @bot.command()
 async def send(ctx):
     await ctx.author.send('Hello World')
@@ -72,7 +102,7 @@ async def on_member_join(member):
         await bot.get_channel(ch.id).send(f'{member.name}, what is it your desire?')
 
 @bot.event
-async def on_member_remove
+async def on_member_remove(member):
     for ch in bot.get_guild(member.guild.id).channels:
         if ch.name == 'основной':
             await bot.get_channel(ch.id).send(f'{member}, I will wait for you')
