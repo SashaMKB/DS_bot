@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-import os, sqlite3
+import os
+import sqlite3
 import string
 import json
 
@@ -75,9 +76,9 @@ async def on_message(message):
 
 @bot.command()
 async def status(ctx, member: discord.Member):
-    base.execute('CREATE TABLE IF NOT EXISTS warning(userid INT, count INT)')
+    base.execute(f"CREATE TABLE IF NOT EXISTS '{ctx.message.guild.name}'(userid INT, count INT)")
     base.commit()
-    warnings = cur.execute('SELECT * FROM warning WHERE userid == ?', (member.id,)).fetchone()
+    warnings = cur.execute(f"SELECT * FROM '{ctx.message.guild.name}' WHERE userid == ?",(ctx.message.author.id,)).fetchone()
     if warnings == None:
         await ctx.send(f'{ctx.message.author.mention}, clear yet')
     else:
@@ -98,9 +99,20 @@ async def clear(ctx, amount=100):
 @bot.event
 async def on_member_join(member):
     await member.send('Welcome home, good hunter')
+    Talk = discord.utils.get(member.guild.roles, name='Talk')
+    await member.add_roles(Talk)
     for ch in bot.get_guild(member.guild.id).text_channels:
         await bot.get_channel(ch.id).send(f'{member.name}, what is it your desire?')
 
+@bot.command()
+@commands.has_permissions(manage_messages=True)
+async def mute(ctx,member: discord.Member):
+    Mute = discord.utils.get(member.guild.roles, name ="Mute")
+    Talk = discord.utils.get(member.guild.roles, name ="Talk")
+    await member.add_roles(Mute)
+    await member.remove_roles(Talk)
+    await ctx.send(f'{member.mention}, get silent')
+    await member.send(f'Get mute on server {ctx.guild.name}')
 @bot.event
 async def on_member_remove(member):
     for ch in bot.get_guild(member.guild.id).channels:
